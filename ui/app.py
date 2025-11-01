@@ -10,7 +10,7 @@ Features:
 - Customer feedback mechanism
 - Transparent communication
 
-Run: streamlit run app.py
+Run from PROJECT ROOT: streamlit run ui/app.py
 """
 
 import sys
@@ -20,14 +20,19 @@ from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 import logging
 
-# Add src directory to Python path (CRITICAL: allows imports to work when streamlit runs from project root)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# CRITICAL: Add parent directory to path so imports work
+# When running: streamlit run ui/app.py
+# __file__ = ticketglass/ui/app.py
+# dirname(__file__) = ticketglass/ui
+# dirname(dirname(__file__)) = ticketglass (PROJECT ROOT)
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
 
 # Backend imports
 from agent.core import Agent, TicketState, Phase, Sentiment, ContextEntry
 from agent.prompts import get_system_prompt
 from data.mock_tickets import get_mock_tickets, get_demo_ticket
-from data.adapters import MockTicketAdapter, TicketState as AdapterTicketState
+from data.adapters import MockTicketAdapter
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -230,7 +235,7 @@ def render_timeline(ticket_dict: Dict[str, Any]):
     Render timeline view - what the customer sees.
     Shows: When things happened, what we suggested, what you told us, what's next.
     """
-    st.subheader("📅 Your Ticket Timeline")
+    st.subheader("📍 Your Ticket Timeline")
     
     agent = get_agent()
     current_phase_name = ticket_dict['status_events'][-1]['phase']
@@ -256,7 +261,7 @@ def render_timeline(ticket_dict: Dict[str, Any]):
                 st.write(symbol)
             with col2:
                 if st.button(
-                    f"**{time}** — {phase}",
+                    f"**{time}** – {phase}",
                     key=f"phase_{phase}",
                     use_container_width=True,
                     help="Click to expand/collapse"
@@ -299,7 +304,7 @@ def render_timeline(ticket_dict: Dict[str, Any]):
 
 def render_feedback_widget(ticket_dict: Dict[str, Any]):
     """Render feedback buttons - customer tells us if this helped."""
-    st.subheader("📝 Was This Helpful?")
+    st.subheader("👍 Was This Helpful?")
     
     col1, col2, col3 = st.columns([1, 1, 2])
     
@@ -343,7 +348,7 @@ def render_your_feedback_history(ticket_dict: Dict[str, Any]):
             sentiment = fb.get('sentiment', 'neutral')
             emoji = "✅" if sentiment == "satisfied" else "⚠️"
             
-            st.markdown(f"{emoji} {fb.get('note')} — {timestamp}")
+            st.markdown(f"{emoji} {fb.get('note')} – {timestamp}")
     else:
         st.info("No feedback recorded yet. Let us know if this helped!")
     
