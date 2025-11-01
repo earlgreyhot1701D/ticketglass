@@ -42,12 +42,12 @@ MOCK_TICKETS_DATA: Dict[str, Dict[str, Any]] = {
             {
                 "time": "09:15",
                 "phase": "Received",
-                "event": "Ticket submitted - Employee needs quarterly report processed",
+                "event": "Ticket submitted - Employee needs quarterly report processed by 4 pm today and Excel keeps crashing",
             },
             {
                 "time": "09:45",
                 "phase": "Assigned",
-                "event": "Assigned to IT support team",
+                "event": "Assigned to TicketGlass IT support team",
             },
             {
                 "time": "10:00",
