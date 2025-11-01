@@ -77,22 +77,53 @@ CSS_STYLES = """
         background-color: #f9f9f9;
     }
     
-    /* Agent summary box */
+    /* Speaker label styling */
+    .ticketglass-speaker-label {
+        font-weight: 600;
+        color: #0099cc;
+        margin: 8px 0 6px 0;
+        font-size: 0.95rem;
+    }
+    
+    /* Support team speaker box */
     .ticketglass-summary-box {
         background-color: #e8f4f8;
         padding: 12px;
         border-radius: 4px;
-        margin: 8px 0;
+        margin: 8px 0 12px 0;
         border-left: 4px solid #0099cc;
+        color: #1a1a1a !important;
     }
     
-    /* User feedback box */
+    /* Customer speaker box */
     .ticketglass-feedback-box {
         background-color: #fff3cd;
         padding: 12px;
         border-radius: 4px;
-        margin: 8px 0;
+        margin: 8px 0 12px 0;
         border-left: 4px solid #ffc107;
+        color: #1a1a1a !important;
+    }
+    
+    /* Status/event box */
+    .ticketglass-event-box {
+        background-color: #f0f0f0;
+        padding: 12px;
+        border-radius: 4px;
+        margin: 8px 0 12px 0;
+        border-left: 4px solid #888;
+        color: #1a1a1a !important;
+        font-style: italic;
+    }
+    
+    /* Resolution box */
+    .ticketglass-resolution-box {
+        background-color: #e8f8e8;
+        padding: 12px;
+        border-radius: 4px;
+        margin: 8px 0 12px 0;
+        border-left: 4px solid #28a745;
+        color: #1a1a1a !important;
     }
     </style>
 """
@@ -105,8 +136,11 @@ CSS_STYLES = """
 if "selected_ticket_id" not in st.session_state:
     st.session_state.selected_ticket_id = "TKT-001"
 
-if "expanded_phases" not in st.session_state:
-    st.session_state.expanded_phases = {}
+if "expanded_phase" not in st.session_state:
+    st.session_state.expanded_phase = None  # ACCORDION: Only one phase open at a time
+
+if "expand_all" not in st.session_state:
+    st.session_state.expand_all = False  # "View All Phases" toggle
 
 if "feedback_store" not in st.session_state:
     st.session_state.feedback_store = {}
@@ -232,13 +266,25 @@ def render_status_bar(ticket_dict: Dict[str, Any]):
 
 def render_timeline(ticket_dict: Dict[str, Any]):
     """
-    Render timeline view - what the customer sees.
-    Shows: When things happened, what we suggested, what you told us, what's next.
+    Render timeline view with ACCORDION pattern (only one phase open at a time).
+    Clear speaker attribution, tight visual hierarchy, NO blank boxes.
     """
     st.subheader("📍 Your Ticket Timeline")
     
+    # Control buttons
+    col1, col2 = st.columns([0.5, 0.5])
+    with col1:
+        if st.button("📖 View All Phases", use_container_width=True):
+            st.session_state.expand_all = not st.session_state.expand_all
+    with col2:
+        if st.button("📁 Close All", use_container_width=True):
+            st.session_state.expand_all = False
+            st.session_state.expanded_phase = None
+    
+    st.caption("💡 Click any phase to read what happened at that step")
+    st.write("")  # Single spacing line before timeline
+    
     agent = get_agent()
-    current_phase_name = ticket_dict['status_events'][-1]['phase']
     
     for event_idx, event in enumerate(ticket_dict['status_events']):
         phase = event['phase']
@@ -247,57 +293,70 @@ def render_timeline(ticket_dict: Dict[str, Any]):
         user_feedback = event.get('user_feedback')
         resolution = event.get('resolution')
         learning_tip = event.get('learning_tip')
+        event_text = event.get('event')
         
         # Get phase style
         style = get_phase_style(ticket_dict, phase)
         symbol = style["symbol"]
         
-        is_expanded = st.session_state.expanded_phases.get(phase, False)
+        # ACCORDION LOGIC: Check if this phase is expanded
+        is_expanded = (st.session_state.expanded_phase == phase) or st.session_state.expand_all
         
-        with st.container():
-            # Clickable phase header
-            col1, col2 = st.columns([0.1, 0.9])
-            with col1:
-                st.write(symbol)
-            with col2:
-                if st.button(
-                    f"**{time}** – {phase}",
-                    key=f"phase_{phase}",
-                    use_container_width=True,
-                    help="Click to expand/collapse"
-                ):
-                    st.session_state.expanded_phases[phase] = not is_expanded
+        # Visual indicator - arrow changes based on state
+        expand_indicator = "▼" if is_expanded else "▶"
+        
+        # PHASE HEADER - SINGLE BUTTON (no st.columns!) with all symbols in one line
+        # This eliminates the blank box issue completely
+        if st.button(
+            f"{symbol} {expand_indicator}  **{time}** – {phase}",
+            key=f"phase_{phase}",
+            use_container_width=True,
+            help="Click to view this step"
+        ):
+            # ACCORDION LOGIC: Toggle this phase, close others
+            if st.session_state.expanded_phase == phase:
+                st.session_state.expanded_phase = None  # Close if clicking same one
+            else:
+                st.session_state.expanded_phase = phase  # Open this, close others
+            st.session_state.expand_all = False  # Turn off "View All"
+            st.rerun()
+        
+        # EXPANDED CONTENT - With clear speaker labels and NO blank spaces
+        if is_expanded:
+            # Show event info (who's handling it) for early phases
+            if event_text and not summary:
+                st.markdown(f'<div class="ticketglass-event-box">📌 {event_text}</div>', unsafe_allow_html=True)
             
-            # Expanded content
-            if is_expanded:
-                with st.container():
-                    # What we're doing / what happened
-                    if summary:
-                        st.markdown("#### What We're Doing")
-                        st.markdown(
-                            f'<div class="ticketglass-summary-box">{summary}</div>',
-                            unsafe_allow_html=True
-                        )
-                    
-                    # Your feedback / update
-                    if user_feedback:
-                        st.markdown("#### Your Update")
-                        st.markdown(
-                            f'<div class="ticketglass-feedback-box">{user_feedback}</div>',
-                            unsafe_allow_html=True
-                        )
-                    
-                    # Resolution (if applicable)
-                    if resolution:
-                        st.markdown("#### ✅ Resolution")
-                        st.markdown(resolution)
-                    
-                    # Learning tip (if applicable)
-                    if learning_tip:
-                        st.markdown("#### 💡 For Future Reference")
-                        st.markdown(f"*{learning_tip}*")
+            # What we're doing - WITH SPEAKER LABEL
+            if summary:
+                st.markdown('<div class="ticketglass-speaker-label">🏢 Support Team</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="ticketglass-summary-box">{summary}</div>',
+                    unsafe_allow_html=True
+                )
             
-            st.markdown("")  # Spacing
+            # Your feedback - WITH SPEAKER LABEL
+            if user_feedback:
+                st.markdown('<div class="ticketglass-speaker-label">👤 You said</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="ticketglass-feedback-box">{user_feedback}</div>',
+                    unsafe_allow_html=True
+                )
+            
+            # Resolution - WITH SPEAKER LABEL
+            if resolution:
+                st.markdown('<div class="ticketglass-speaker-label">✅ Resolution</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="ticketglass-resolution-box">{resolution}</div>',
+                    unsafe_allow_html=True
+                )
+            
+            # Learning tip - WITH SPEAKER LABEL
+            if learning_tip:
+                st.markdown('<div class="ticketglass-speaker-label">💡 Tip for Next Time</div>', unsafe_allow_html=True)
+                st.markdown(f"*{learning_tip}*")
+        
+        st.write("")  # Single spacing between phases
     
     st.divider()
 
@@ -391,8 +450,6 @@ def main():
     ticket_dict = load_ticket_data(st.session_state.selected_ticket_id)
     
     # CUSTOMER PORTAL LAYOUT
-    # (No ticket selector - customer sees THEIR ticket)
-    
     render_header(ticket_dict)
     render_ticket_status(ticket_dict)
     render_status_bar(ticket_dict)
