@@ -193,19 +193,19 @@ Watch how Amir's Excel crash gets resolved with real-time transparency:
 ### Screenshots from the Demo
 
 **Landing Page – Instant Status Update**
-![Landing Page](docs/screenshots/1-landing.png)
+![Landing Page](docs/screenshots/1-landing.PNG)
 *User sees problem is resolved immediately, but can explore the reasoning chain below.*
 
 **Timeline View – Diagnosis Phase**
-![Diagnosis Phase](docs/screenshots/2-timeline.png)
+![Diagnosis Phase](docs/screenshots/2-timeline.PNG)
 *Agent tries the standard fix (restart). User says they already tried it. Notice: no repetition coming.*
 
 **Escalation – Context-Aware Reasoning**
-![Escalation Phase](docs/screenshots/3-escalation.png)
+![Escalation Phase](docs/screenshots/3-escalation.PNG)
 *Agent reads the context ("restart didn't work"), escalates to add-ins. User confirms: it worked.*
 
 **Feedback & Learning**
-![Feedback Widget](docs/screenshots/4-feedback.png)
+![Feedback Widget](docs/screenshots/4-feedback.PNG)
 *User marks it helpful. Learns the tip for next time: "Disable add-ins FIRST before reinstalling."*
 
 ----
