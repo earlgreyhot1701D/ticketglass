@@ -104,7 +104,7 @@ Every step shows:
                │ Local function calls
                ↓
 ┌──────────────▼──────────────────────┐
-│  Agent Core (Pure Python)           │
+│  Core.py (Pure Python)              │
 │  - Context awareness                │
 │  - Sentiment detection              │
 │  - Tone matching                    │
@@ -113,7 +113,7 @@ Every step shows:
                │ boto3.invoke_model()
                ↓
 ┌──────────────▼──────────────────────┐
-│  AWS Bedrock (Claude 3 Sonnet)     │
+│  AWS Bedrock (Claude 3 Sonnet)      │
 │  - LLM reasoning                    │
 │  - Response generation              │
 └──────────────┬──────────────────────┘
@@ -127,7 +127,7 @@ Every step shows:
 
 ### Why This Architecture?
 
-- **Pure Python Agent Core** → Can be deployed anywhere (Lambda, Docker, FastAPI, etc.)
+- **Pure Python Core.py** → Can be deployed anywhere (Lambda, Docker, FastAPI, etc.)
 - **Swappable Data Adapters** → Seamlessly switch from mock data → DynamoDB → real PSA APIs
 - **Standard JSON Output** → API-ready from day 1, not just Streamlit-ready
 - **AWS Bedrock Native** → No vendor lock-in, uses managed LLM service with automatic scaling
@@ -458,7 +458,7 @@ See `POST_MVP_ROADMAP.md` for:
 
 **TicketGlass was built by a collaborative team:**
 
-- **Product Vision & UX** – Vibe coder who shaped the vision, made real-time decisions, and validated the end-user experience
+- **Product Vision & UX** – EarlGreyHot1701D - Vibe coder who shaped the vision, made real-time decisions, and validated the end-user experience
 - **End-User Perspective** – Eileen, who evaluated product concept, reviewed agent tone/clarity, and provided critical feedback on whether this actually helps real users
 - **Architecture & Code** – Claude (Anthropic) and ChatGPT (OpenAI) co-piloted the build, handling architecture design, code organization, comprehensive testing, documentation, and AWS integration patterns
 
