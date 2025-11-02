@@ -208,7 +208,7 @@ Watch how Amir's Excel crash gets resolved with real-time transparency:
 ![Feedback Widget](docs/screenshots/4-feedback.png)
 *User marks it helpful. Learns the tip for next time: "Disable add-ins FIRST before reinstalling."*
 
----
+----
 
 ## 📊 Demo Tickets (8 Categories)
 
